@@ -109,6 +109,19 @@ impl CredsspSequence {
                 }
                 .into()
             }
+            Credentials::AccountNamePassword { account_name, password } => {
+                let username = match domain {
+                    Some(domain) if !domain.is_empty() => Username::new_down_level_logon_name(account_name, domain)
+                        .map_err(|e| custom_err!("invalid username", e))?,
+                    _ => Username::new_account_name(account_name),
+                };
+
+                sspi::AuthIdentity {
+                    username,
+                    password: password.to_owned().into(),
+                }
+                .into()
+            }
             Credentials::SmartCard { pin, config } => match config {
                 Some(config) => {
                     let cert: Certificate = picky_asn1_der::from_bytes(&config.certificate)

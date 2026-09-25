@@ -112,6 +112,11 @@ pub enum Credentials {
         username: String,
         password: String,
     },
+    /// Account name taken verbatim, with no `DOMAIN\user` etc. split.
+    AccountNamePassword {
+        account_name: String,
+        password: String,
+    },
     SmartCard {
         pin: String,
         config: Option<SmartCardIdentity>,
@@ -122,6 +127,7 @@ impl Credentials {
     fn username(&self) -> Option<&str> {
         match self {
             Self::UsernamePassword { username, .. } => Some(username),
+            Self::AccountNamePassword { account_name, .. } => Some(account_name),
             Self::SmartCard { .. } => None, // Username is ultimately provided by the smart card certificate.
         }
     }
@@ -129,6 +135,7 @@ impl Credentials {
     fn secret(&self) -> &str {
         match self {
             Self::UsernamePassword { password, .. } => password,
+            Self::AccountNamePassword { password, .. } => password,
             Self::SmartCard { pin, .. } => pin,
         }
     }
